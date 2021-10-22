@@ -1,0 +1,83 @@
+﻿<Page
+    x:Class="Wycofania.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Wycofania"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Loaded="Page_Loaded">
+    <UserControl.Resources>
+        <local:KonwersjaDaty x:Key="KonwersjaDaty"/>
+        <local:KonwersjaIkonkiVisibility x:Key="KonwersjaIkonkiVisibility"/>
+        <local:KonwersjaIkonki x:Key="KonwersjaIkonki"/>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="Wycofania" x:Uid="uiMainTitle" HorizontalAlignment="Center" FontSize="20"/>
+        
+        <ListView x:Name="uiList" Margin="0,25,0,0" HorizontalContentAlignment="Stretch" Grid.Row="1" >
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="HorizontalContentAlignment"  Value="Stretch"/>
+                    <Setter Property="MinHeight" Value="30"/>
+                </Style>
+            </ListView.ItemContainerStyle>
+
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <Grid Margin="0,5,0,0" BorderThickness="1" BorderBrush="Blue" DoubleTapped="uiOpenDetails_Click">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="45"/> <!-- na ikonke, teraz nazwa -->
+                            <ColumnDefinition Width="Auto"/> <!-- data -->
+                            <ColumnDefinition /> <!-- tytul -->
+                            <ColumnDefinition Width="Auto"/> <!-- button otwierajacy -->
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Column="0" Text="{Binding sIcon, Mode=OneWay }" VerticalAlignment="Center" Visibility="{Binding sData, Mode=OneWay, Converter={StaticResource KonwersjaIkonkiVisibility}, ConverterParameter=text }"/>
+                        <Image Grid.Column="0" HorizontalAlignment="Center" Width="28"  Source="{Binding sIcon, Mode=OneWay, Converter={StaticResource KonwersjaIkonki} }" VerticalAlignment="Center" Visibility="{Binding sData, Mode=OneWay, Converter={StaticResource KonwersjaIkonkiVisibility}, ConverterParameter=icon }"/>
+                        <TextBlock Grid.Column="1" Text="{Binding sData, Mode=OneWay, Converter={StaticResource KonwersjaDaty} }" VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="2" Text="{Binding sTitle, Mode=OneWay }" FontWeight="Bold" Margin="5,0,5,0" VerticalAlignment="Center" />
+                        <Button Grid.Column="3" Margin="5,0,5,0" x:Uid="uiOpenContent" Content="Pokaż" Click="uiOpenDetails_Click" />
+                        <Grid.ContextFlyout>
+                            <MenuFlyout>
+                                <MenuFlyoutItem Text="Szczegóły" Click="uiOpenDetails_Click" />
+                                <MenuFlyoutItem Text="Kopiuj link" Click="uiCopyLink_Click" />
+                                <MenuFlyoutSeparator/>
+                                <MenuFlyoutItem Text="Otwórz stronę web" Click="uiOpenWeb_Click" />
+                                <!--<MenuFlyoutItem Text="Szczegóły" x:Uid="uiDetailsText" Click="uiOpenDetails_Click" />
+                                <MenuFlyoutItem Text="Kopiuj link" x:Uid="uiCopyLinkText" Click="uiCopyLink_Click" />
+                                <MenuFlyoutSeparator/>
+                                <MenuFlyoutItem Text="Otwórz stronę web" x:Uid="uiOpenWebText" Click="uiOpenWeb_Click" />-->
+                            </MenuFlyout>
+                        </Grid.ContextFlyout>
+
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+
+    </Grid>
+    <Page.BottomAppBar>
+        <CommandBar>
+            <AppBarButton Icon="Find" Label="Szukaj">
+                <AppBarButton.Flyout>
+                    <MenuFlyout x:Name="uiSearch">
+                    </MenuFlyout>
+                </AppBarButton.Flyout>
+            </AppBarButton>
+            <AppBarButton Icon="Refresh" Label="Odśwież" Click="uiRefresh_Click" />
+            <AppBarButton Icon="Setting" Label="Ustawienia" Click="uiSetup_Click" />
+            <!--<AppBarButton Icon="Refresh" x:Uid="uiWczytajLabel" Label="Wczytaj" Click="uiRefresh_Click" />
+            <AppBarButton Icon="Setting" x:Uid="uiSettingsLabel" Label="Ustawienia" Click="uiSetup_Click" />-->
+        </CommandBar>
+
+    </Page.BottomAppBar>
+
+</Page>
