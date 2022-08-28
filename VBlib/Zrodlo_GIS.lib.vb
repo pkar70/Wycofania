@@ -6,27 +6,24 @@ Public Class Source_GIS
     Protected Overrides Property SRC_SETTING_NAME As String = "GIS"
     Protected Overrides Property SRC_ABOUTUS_LINK As String = "https://www.gov.pl/web/gis/podstawowe-informacje"
     Protected Overrides Property SRC_SEARCH_LINK As String = "https://www.gov.pl/web/gis/ostrzezenia"
+    Public Overrides Async Function ReadData(bMsg As Boolean) As Task(Of ObjectModel.Collection(Of JednoPowiadomienie))
 
-    Protected Overrides Async Function ReadDataMain(bMsg As Boolean) As Task
-        DebugOut("ReadData for GIS ")
-        If Not GetSettingsBool(SRC_SETTING_NAME, SRC_DEFAULT_ENABLE) Then Return
+        'DebugOut("  overridinig lastid")
 
-        ' Return ' ***********************************************************************
+        Dim oRetList As New ObjectModel.Collection(Of JednoPowiadomienie)
 
-
+        Dim iLimit As Integer = 20 ' tu właściwie niepotrzebny - bo i tak strona ma tylko 10 pozycji
         Dim sLimitDate As String = GetLimitDate()
         DebugOut("  Limits: sLimitDate=" & sLimitDate)
 
-        Dim iLimit As Integer = 20 ' tu właściwie niepotrzebny - bo i tak strona ma tylko 10 pozycji
-
         ' https://rdg.ezdrowie.gov.pl/, 7 kB
-        Dim sPage As String = Await pkar.HttpPageAsync("https://www.gov.pl/web/gis/ostrzezenia", "Error loading GIS data", bMsg)
-        If sPage = "" Then Return
+        Dim sPage As String = Await HttpPageAsync("https://www.gov.pl/web/gis/ostrzezenia")
+        If sPage = "" Then Return Nothing
 
         Dim iInd As Integer = sPage.IndexOf("<h2>Ostrzeżenia</h2>")
         If iInd < 10 Then
             If bMsg Then DialogBox("ERROR parsing data (h2)")
-            Return
+            Return Nothing
         End If
 
         iInd = sPage.IndexOf("<ul", iInd)
@@ -43,7 +40,7 @@ Public Class Source_GIS
         Dim oElems As Xml.XmlNodeList = oXml.GetElementsByTagName("li")
         If oElems.Count < 1 Then
             If bMsg Then DialogBox("ERROR parsing data (li)")
-            Return
+            Return Nothing
         End If
 
         Dim sFirstId As String = ""
@@ -68,7 +65,7 @@ Public Class Source_GIS
 
                 If oNew.sData < sLimitDate Then
                     DebugOut("iteraing END because of DATE: " & oNew.sData & " < " & sLimitDate)
-                    Return
+                    Return oRetList
                 End If
 
             End If
@@ -85,7 +82,7 @@ Public Class Source_GIS
             For Each oItem As JednoPowiadomienie In App.glItems
                 If oItem.sLink = oNew.sLink Then
                     DebugOut("iteraing END because of ID")
-                    Return
+                    Return oRetList
                 End If
             Next
 
@@ -147,18 +144,19 @@ Public Class Source_GIS
             oNew.sHtmlInfo = sPage
 
             DebugOut("Adding " & oNew.sTitle)
-            App.glItems.Add(oNew)
-            MakeToast(oNew)
+            oRetList.Add(oNew)
 
             iLimit -= 1
             If iLimit < 0 Then
                 DebugOut("iteraing END because of INT limit")
-                Return
+                Return oRetList
             End If
 
         Next
 
         DebugOut("doszlismy do konca strony, i dalej nie ma tego co już widzieliśmy - pewnie init, nie wczytuję więcej")
+
+        Return oRetList
 
     End Function
 

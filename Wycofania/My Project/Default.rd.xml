@@ -25,6 +25,11 @@
     
     
     <!-- Add your application specific runtime directives here. -->
+	<Type Name="System.ServiceModel.Syndication.SyndicationFeedFormatter">
+	<Method Name="DefaultUriParser" Dynamic="Required" />
+	</Type>
+
+	<Namespace Name="System.ServiceModel.Syndication" Dynamic="Required All" />
 
 
   </Application>

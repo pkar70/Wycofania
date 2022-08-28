@@ -7,28 +7,24 @@ Public Class Source_Gif
     Protected Overrides Property SRC_ABOUTUS_LINK As String = "https://www.gov.pl/web/gif/rodzaje-wydawanych-decyzji"
     Protected Overrides Property SRC_SEARCH_LINK As String = "https://rdg.ezdrowie.gov.pl/"
 
-    Protected Overrides Async Function ReadDataMain(bMsg As Boolean) As Task
-        DebugOut("ReadData for GIF")
-        If Not GetSettingsBool(SRC_SETTING_NAME, SRC_DEFAULT_ENABLE) Then Return
-
-        ' Return ' ***********************************************************************
-
-
-        Dim sLimitDate As String = GetLimitDate()
-        DebugOut("  Limits: sLimitDate=" & sLimitDate)
+    Public Overrides Async Function ReadData(bMsg As Boolean) As Task(Of ObjectModel.Collection(Of JednoPowiadomienie))
 
         'DebugOut("  overridinig lastid")
 
+        Dim oRetList As New ObjectModel.Collection(Of JednoPowiadomienie)
+
         Dim iLimit As Integer = 20 ' tu właściwie niepotrzebny - bo i tak strona ma tylko 25 pozycji
+        Dim sLimitDate As String = GetLimitDate()
+        DebugOut("  Limits: sLimitDate=" & sLimitDate)
 
         ' https://rdg.ezdrowie.gov.pl/, 20 kB
-        Dim sPage As String = Await pkar.HttpPageAsync("https://rdg.ezdrowie.gov.pl/", "Error loading GIF data", bMsg)
-        If sPage = "" Then Return
+        Dim sPage As String = Await HttpPageAsync("https://rdg.ezdrowie.gov.pl/")
+        If sPage = "" Then Return Nothing
 
         Dim iInd As Integer = sPage.IndexOf("table-decisions")
         If iInd < 10 Then
             If bMsg Then DialogBox("ERROR parsing data (tabledec)")
-            Return
+            Return Nothing
         End If
 
         iInd = sPage.LastIndexOf("<table", iInd)
@@ -45,7 +41,7 @@ Public Class Source_Gif
         Dim oElems As Xml.XmlNodeList = oXml.GetElementsByTagName("tbody")
         If oElems.Count <> 1 Then
             If bMsg Then DialogBox("ERROR parsing data (tbody)")
-            Return
+            Return Nothing
         End If
 
         Dim iMaxId As Integer = 0
@@ -61,7 +57,7 @@ Public Class Source_Gif
             oNew.sData = oRow.ChildNodes.Item(2).InnerText.Replace("-", ".")
             If oNew.sData < sLimitDate Then
                 DebugOut("iteraing END because of DATE: " & oNew.sData & " < " & sLimitDate)
-                Return    ' koniec czytania - starsze niż...
+                Return oRetList     ' koniec czytania - starsze niż...
             End If
 
             oNew.sId = oRow.ChildNodes.Item(6).InnerXml.ToString
@@ -75,7 +71,7 @@ Public Class Source_Gif
             For Each oItem As JednoPowiadomienie In App.glItems
                 If oItem.sLink = oNew.sLink Then
                     DebugOut("iteraing END because of ID")
-                    Return
+                    Return oRetList
                 End If
             Next
 
@@ -112,17 +108,17 @@ Public Class Source_Gif
 
             oNew.sHtmlInfo = sPage
 
-            App.glItems.Add(oNew)
-            MakeToast(oNew)
+            oRetList.Add(oNew)
 
             iLimit -= 1
             If iLimit < 0 Then
                 DebugOut("iteraing END because of INT limit")
-                Return
+                Return oRetList
             End If
 
         Next
 
+        Return oRetList
         ' doszlismy do konca strony, i dalej nie ma tego co już widzieliśmy - pewnie init, nie wczytuję więcej
 
     End Function

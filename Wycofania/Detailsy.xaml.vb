@@ -11,7 +11,7 @@ Public NotInheritable Class Detailsy
 
         If msLink.Length < 5 Then Return
 
-        For Each oItem As JednoPowiadomienie In App.glItems
+        For Each oItem As JednoPowiadomienie In VBlib.App.glItems
             If oItem.sLink.ToLower = msLink Then
                 moItem = oItem
             End If

@@ -1,40 +1,34 @@
-﻿' https://webgate.ec.europa.eu/rasff-window/consumers/?event=rss&country=PL - zdrowotny; może być wybór kraju
+﻿
+' przemigrowane z Windows.Web.Syndication do System.ServiceModel.Syndication
+
+' https://webgate.ec.europa.eu/rasff-window/consumers/?event=rss&country=PL - zdrowotny; może być wybór kraju
 Public Class Source_RASFF
     Inherits Source_Base
     Protected Overrides Property SRC_SOURCE_FULL_NAME As String = "Rapid Alert System for Food and Feed (EU)"
     Protected Overrides Property SRC_SETTING_NAME As String = "RASFF"
     Protected Overrides Property SRC_ABOUTUS_LINK As String = "https://ec.europa.eu/food/safety/rasff/"
     Protected Overrides Property SRC_SEARCH_LINK As String = "https://webgate.ec.europa.eu/rasff-window/portal/?event=SearchForm&cleanSearch=1"
+    Public Overrides Async Function ReadData(bMsg As Boolean) As Task(Of ObjectModel.Collection(Of JednoPowiadomienie))
 
-    Protected Overrides Async Function ReadDataMain(bMsg As Boolean) As Task
-        DebugOut("ReadData for " & SRC_SETTING_NAME)
-        If Not GetSettingsBool(SRC_SETTING_NAME, SRC_DEFAULT_ENABLE) Then Return
-
+        Dim iLimit As Integer = 20
         Dim sLimitDate As String = GetLimitDate()
         DebugOut("  Limits: sLimitDate=" & sLimitDate)
 
-        ' Return ' ***********************************************************************
+        Dim oRetList As New ObjectModel.Collection(Of JednoPowiadomienie)
 
-        Dim iLimit As Integer = 20
+        Dim oRssFeed As ServiceModel.Syndication.SyndicationFeed = Nothing
+        Using oReader = Xml.XmlReader.Create("https://webgate.ec.europa.eu/rasff-window/backend/public/consumer/rss/5028/")
+            oRssFeed = ServiceModel.Syndication.SyndicationFeed.Load(oReader)
+        End Using
 
-        Dim oRssClnt As Windows.Web.Syndication.SyndicationClient = New Windows.Web.Syndication.SyndicationClient
-        Dim oRssFeed As Windows.Web.Syndication.SyndicationFeed = Nothing
-        Try
-            oRssFeed = Await oRssClnt.RetrieveFeedAsync(New Uri("https://webgate.ec.europa.eu/rasff-window/consumers/?event=rss&country=PL"))
-        Catch ex As Exception
-            oRssFeed = Nothing
-        End Try
-        If oRssFeed Is Nothing Then
-            If bMsg Then DialogBox("Error reading RSS from " & SRC_SETTING_NAME & " (null from RetrieveFeedAsync)")
-            Return
-        End If
+        ' <rss version="2.0">
 
         If oRssFeed.Items.Count < 1 Then
-            If bMsg Then DialogBox("Error reading RSS from " & SRC_SETTING_NAME)
-            Return
+            If bMsg Then DialogBox("Error reading RSS from " & SRC_SOURCE_FULL_NAME)
+            Return Nothing
         End If
 
-        For Each oRssItem As Windows.Web.Syndication.SyndicationItem In oRssFeed.Items
+        For Each oRssItem As ServiceModel.Syndication.SyndicationItem In oRssFeed.Items
             Dim oNew As JednoPowiadomienie = NewPowiadomienie()
 
             '<item>
@@ -96,17 +90,18 @@ Public Class Source_RASFF
             End If
             oNew.sHtmlInfo = sPage
 
-            App.glItems.Add(oNew)
-            MakeToast(oNew)
+            oRetList.Add(oNew)
 
             iLimit -= 1
             If iLimit < 0 Then
                 DebugOut("iteraing END because of INT limit")
-                Return
+                Return oRetList
             End If
 
         Next
 
+        Return oRetList
 
     End Function
+
 End Class

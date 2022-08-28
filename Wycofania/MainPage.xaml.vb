@@ -1,4 +1,21 @@
 ﻿
+' 2022.02.06
+' ikonka dla Toast (ta sama co na liście)
+' 
+
+' 2022.02.03
+' * VBlib, do którego trafiają wszystkie poza Rasff i UOKiK (bo te mają RSS)
+' * wysyłanie Toastu - z Builder (niestety, w VBLib nie ma .GetXml więc nie da się przenieść do VBLib)
+' * MinVers na 16299, co pozwala na VBlib .Net Std 2.0, a to daje RSS
+' * klasy Source* udało się w całości przenieść do VBlib, po przenosinach Toast do App, zaś związane z UI - do xaml.vb, głównie Settings
+' * byla wiec konieczna migracja z ServiceModel.Syndication.SyndicationFeed do ServiceModel.Syndication.SyndicationFeed
+
+' 2021.12.10
+' tak jakby UOKIK_Reg, GIS, GIF i jeszcze jedno miało w Timer problem ze ściąganiem danych (get/post, "text associated with this error code cannot be found")
+
+' 2021.11.30
+' * uaktualnienie linku do RASFF
+
 ' 2021.06.18
 ' * UOKIK-R nie reagował na wyłączenie
 ' * trochę dodatkowego DebugOut
@@ -11,14 +28,6 @@
 Public NotInheritable Class MainPage
     Inherits Page
 
-    'Dim msToastId As String = ""
-    'Protected Overrides Sub onNavigatedTo(e As NavigationEventArgs)
-    '    Try
-    '        msToastId = e.Parameter.ToString.ToLower
-    '    Catch ex As Exception
-    '        msToastId = ""
-    '    End Try
-    'End Sub
 
     Private Sub uiSetup_Click(sender As Object, e As RoutedEventArgs)
         Me.Frame.Navigate(GetType(Settings))
@@ -26,6 +35,7 @@ Public NotInheritable Class MainPage
 
     Private Async Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
         CrashMessageInit()
+
         ProgRingInit(True, True)
 
         If Not IsTriggersRegistered("Wycofania") Then
@@ -37,37 +47,18 @@ Public NotInheritable Class MainPage
         End If
 
         ProgRingShow(True)
-        If App.glItems.Count < 1 Then Await App.WczytajCache()
+        If VBlib.App.glItems.Count < 1 Then App.WczytajCache()
         DodajLinkiSzukania()
 
         ProgRingShow(False)
 
-        'Dim bFound As Boolean = False
-
-        'If msToastId <> "" Then  ' nie z Toast, lub Toast ktory mial tylko OPEN
-        '    Dim iInd As Integer = msToastId.IndexOf("-")
-        '    If iInd < 2 Then
-        '        CrashMessageAdd("Bad param from Toast??", "")
-        '    Else
-        '        Dim sIcon As String = msToastId.Substring(0, iInd)
-        '        Dim sId As String = msToastId.Substring(0, iInd + 1)
-
-        '        For Each oItem As JednoPowiadomienie In App.glItems
-        '            If oItem.sIcon = sIcon AndAlso oItem.sId = sId Then
-        '                bFound = True
-        '                Me.Frame.Navigate(GetType(Detailsy), oItem.sLink)
-        '            End If
-        '        Next
-        '    End If
-        'End If
-
-        uiList.ItemsSource = From c In App.glItems Order By c.sData Descending
+        uiList.ItemsSource = From c In VBlib.App.glItems Order By c.sData Descending
 
     End Sub
 
     Public Sub GoDetailsToastId(sIcon As String, sId As String)
 
-        For Each oItem As JednoPowiadomienie In App.glItems
+        For Each oItem As JednoPowiadomienie In VBlib.App.glItems
             If oItem.sIcon = sIcon AndAlso oItem.sId = sId Then
                 Me.Frame.Navigate(GetType(Detailsy), oItem.sLink)
             End If
@@ -76,8 +67,11 @@ Public NotInheritable Class MainPage
 
 
     Private Sub DodajLinkiSzukania()
-        For Each oZrodlo As Source_Base In App.gaSrc
-            Dim oMFI As MenuFlyoutItem = oZrodlo.GetSearchMFI
+        For Each oZrodlo As VBlib.Source_Base In VBlib.App.gaSrc
+            Dim oMFI As MenuFlyoutItem = New MenuFlyoutItem
+            oMFI.Text = oZrodlo.GetSettingName
+            oMFI.Name = "uiSearchMFI_" & oZrodlo.GetSettingName
+            oMFI.DataContext = oZrodlo.GetSearchLink
             AddHandler oMFI.Click, AddressOf uiMFIsearch_Click
             uiSearch.Items.Add(oMFI)
         Next
@@ -86,21 +80,21 @@ Public NotInheritable Class MainPage
     Private Sub uiMFIsearch_Click(sender As Object, e As RoutedEventArgs)
         Dim oMFI As MenuFlyoutItem = TryCast(sender, MenuFlyoutItem)
         If oMFI Is Nothing Then Return
-        For Each oZrodlo As Source_Base In App.gaSrc
-            oZrodlo.OpenBrowserSearch(oMFI)
-        Next
+        Dim sLink As String = CType(oMFI.DataContext, String)
+        OpenBrowser(sLink)
     End Sub
 
     Private Async Sub uiRefresh_Click(sender As Object, e As RoutedEventArgs)
+
         Dim oLista As Collection(Of JednoPowiadomienie) = New Collection(Of JednoPowiadomienie)
 
-        If App.gaSrc.Count < 1 Then Return
+        If VBlib.App.gaSrc.Count < 1 Then Return
 
-        ProgRingShow(True, False, 0, App.gaSrc.Count)
+        ProgRingShow(True, False, 0, VBlib.App.gaSrc.Count)
         Await App.SciagnijDane(True)
         ProgRingShow(False)
 
-        uiList.ItemsSource = From c In App.glItems Order By c.sData Descending
+        uiList.ItemsSource = From c In VBlib.App.glItems Order By c.sData Descending
 
     End Sub
 
@@ -109,15 +103,6 @@ Public NotInheritable Class MainPage
         Dim oMFI As FrameworkElement = TryCast(sender, FrameworkElement)
         If oMFI Is Nothing Then Return
         oItem = TryCast(oMFI.DataContext, JednoPowiadomienie)
-
-        'If oMFI IsNot Nothing Then
-        '    oItem = TryCast(oMFI.DataContext, JednoPowiadomienie)
-        'Else
-        '    Dim oButt As Button = TryCast(sender, Button)
-        '    If oButt Is Nothing Then Return
-        '    oItem = TryCast(oButt.DataContext, JednoPowiadomienie)
-        'End If
-        'If oItem Is Nothing Then Return
 
         ' wiemy już co
         Me.Frame.Navigate(GetType(Detailsy), oItem.sLink)

@@ -5,12 +5,13 @@
   xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest"
   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
   xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"
-  IgnorableNamespaces="uap mp uap3">
+    xmlns:uap5="http://schemas.microsoft.com/appx/manifest/uap/windows10/5" 
+  IgnorableNamespaces="uap mp uap3 uap5">
 
   <Identity
     Name="622PKar.Wycofania"
     Publisher="CN=B2AF14E8-43FD-463C-83BA-4CEC47122EA2"
-    Version="1.0.0.0" />
+    Version="2.2202.1.0" />
 
   <mp:PhoneIdentity PhoneProductId="af83dc14-1108-41be-97a4-bea8df2e23b9" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
@@ -45,12 +46,21 @@
         <uap:Extension Category="windows.appService">
           <uap3:AppService Name="com.microsoft.pkar.wycofania" SupportsRemoteSystems="true"/>
         </uap:Extension>
-      </Extensions>
+		  <uap5:Extension
+		  Category="windows.appExecutionAlias"
+		  Executable="wycofania.exe"
+		  EntryPoint="wycofania.App">
+			  <uap5:AppExecutionAlias>
+				  <uap5:ExecutionAlias Alias="wycofania.exe" />
+			  </uap5:AppExecutionAlias>
+		  </uap5:Extension>
+	  </Extensions>
 
     </Application>
   </Applications>
 
   <Capabilities>
     <Capability Name="internetClient" />
+    <uap3:Capability Name="remoteSystem"/>
   </Capabilities>
 </Package>
