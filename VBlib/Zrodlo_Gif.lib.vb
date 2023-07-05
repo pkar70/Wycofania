@@ -18,7 +18,7 @@ Public Class Source_Gif
         DebugOut("  Limits: sLimitDate=" & sLimitDate)
 
         ' https://rdg.ezdrowie.gov.pl/, 20 kB
-        Dim sPage As String = Await HttpPageAsync("https://rdg.ezdrowie.gov.pl/")
+        Dim sPage As String = Await HttpPageAsync(New Uri("https://rdg.ezdrowie.gov.pl/"))
         If sPage = "" Then Return Nothing
 
         Dim iInd As Integer = sPage.IndexOf("table-decisions")
@@ -77,7 +77,7 @@ Public Class Source_Gif
 
             DebugOut("  trying to get details for " & oNew.sTitle & "(@" & oNew.sData)
             'Public Property sHtmlInfo As String = ""
-            sPage = Await HttpPageAsync(oNew.sLink, "", False)
+            sPage = Await HttpPageAsync(New Uri(oNew.sLink), "", False)
             DebugOut("  got details HTML page")
 
             iInd = sPage.IndexOf("<h1")

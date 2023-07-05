@@ -17,7 +17,7 @@ Public Class Source_UOKIK_Reg
 
         ' http://publikacje.uokik.gov.pl/hermes3_pub/Rejestr.ashx?Typ=ProduktNiebezpieczny&DataWpisuOd=&DataWpisuDo=&NumerIdentyfikacyjny=&NazwaProduktu=&KodWyrobu=&Sort=DataDokonaniaWpisu_DESC
         ' 2021.12.10: dodałem wymuszenie reset HttpClient
-        Dim sPage As String = Await HttpPageAsync("http://publikacje.uokik.gov.pl/hermes3_pub/Rejestr.ashx", "", True)
+        Dim sPage As String = Await HttpPageAsync(New Uri("http://publikacje.uokik.gov.pl/hermes3_pub/Rejestr.ashx"), "", True)
         If sPage = "" Then Return Nothing
 
         Dim iInd As Integer = sPage.IndexOf("rejestrTable")
@@ -75,7 +75,7 @@ Public Class Source_UOKIK_Reg
             End If
 
             ' wczytanie danych
-            sPage = Await HttpPageAsync(oNew.sLink, "Error loading UOKiK product info")
+            sPage = Await HttpPageAsync(New Uri(oNew.sLink), "Error loading UOKiK product info")
             iInd = sPage.IndexOf("<table id=""wpis")
             If iInd > 0 Then
                 sPage = sPage.Substring(iInd)

@@ -1,4 +1,5 @@
-﻿
+﻿Imports vb14 = VBlib.pkarlibmodule14
+
 
 NotInheritable Class App
     Inherits Application
@@ -13,7 +14,7 @@ NotInheritable Class App
     Protected Overrides Sub OnLaunched(e As Windows.ApplicationModel.Activation.LaunchActivatedEventArgs)
         Dim rootFrame As Frame = OnLaunchFragment(e.PreviousExecutionState)
 
-        InitVbLib()
+        ' InitVbLib()
 
         If e.PrelaunchActivated = False Then
             If rootFrame.Content Is Nothing Then
@@ -55,7 +56,7 @@ NotInheritable Class App
     ' CommandLine, Toasts
     Protected Overrides Async Sub OnActivated(e As IActivatedEventArgs)
 
-        InitVbLib()
+        'InitVbLib()
 
         ' próba czy to commandline
         If e.Kind = ActivationKind.CommandLineLaunch Then
@@ -65,6 +66,7 @@ NotInheritable Class App
             Dim strArgs As String = operation?.Arguments
 
             If Not String.IsNullOrEmpty(strArgs) Then
+                InitLib(strArgs.Split(" ").ToList, True)
                 Await ObsluzCommandLine(strArgs)
                 Window.Current.Close()
                 Return
@@ -73,23 +75,6 @@ NotInheritable Class App
 
         ' jesli nie cmdline (a np. toast), albo cmdline bez parametrow, to pokazujemy okno
         Dim rootFrame As Frame = OnLaunchFragment(e.PreviousExecutionState)
-
-        ' Do not repeat app initialization when the Window already has content,
-        ' just ensure that the window is active
-
-        If rootFrame Is Nothing Then
-            ' Create a Frame to act as the navigation context and navigate to the first page
-            rootFrame = New Frame()
-
-            AddHandler rootFrame.NavigationFailed, AddressOf OnNavigationFailed
-
-            ' PKAR added wedle https://stackoverflow.com/questions/39262926/uwp-hardware-back-press-work-correctly-in-mobile-but-error-with-pc
-            AddHandler rootFrame.Navigated, AddressOf OnNavigatedAddBackButton
-            AddHandler Windows.UI.Core.SystemNavigationManager.GetForCurrentView().BackRequested, AddressOf OnBackButtonPressed
-
-            ' Place the frame in the current Window
-            Window.Current.Content = rootFrame
-        End If
 
         Dim oToastAct As ToastNotificationActivatedEventArgs
         oToastAct = TryCast(e, ToastNotificationActivatedEventArgs)
@@ -134,6 +119,8 @@ NotInheritable Class App
 
             ' Place the frame in the current Window
             Window.Current.Content = mRootFrame
+
+            InitLib(Nothing, True)
         End If
 
         Return mRootFrame
@@ -183,11 +170,11 @@ NotInheritable Class App
     End Sub
 
     Protected Shared Sub MakeToast(oItem As JednoPowiadomienie, sSettName As String, bDefOneToast As Boolean)
-        DumpCurrMethod()
+        vb14.DumpCurrMethod()
 
-        If Not GetSettingsBool(sSettName & "_Toast") Then Return
+        If Not vb14.GetSettingsBool(sSettName & "_Toast") Then Return
 
-        If GetSettingsBool(sSettName & "_OneToast", bDefOneToast) Then
+        If vb14.GetSettingsBool(sSettName & "_OneToast", bDefOneToast) Then
             mToastIcon = oItem.sIcon
             If mToastLines <> "" Then mToastLines += vbCrLf
             mToastLines += oItem.sTitle
@@ -199,13 +186,13 @@ NotInheritable Class App
     End Sub
 
     Public Shared Async Function ReadDataOne(bMsg As Boolean, oZrodlo As VBlib.Source_Base) As Task
-        DumpCurrMethod("(zrodlo: " & oZrodlo.GetFullName)
+        vb14.DumpCurrMethod("(zrodlo: " & oZrodlo.GetFullName)
 
         mToastLines = ""
         mToastIcon = ""
 
-        If Not GetSettingsBool(oZrodlo.GetSettingName, oZrodlo.GetDefEnable) Then
-            DebugOut("ReadData for " & oZrodlo.GetSettingName & " - but not enabled")
+        If Not vb14.GetSettingsBool(oZrodlo.GetSettingName, oZrodlo.GetDefEnable) Then
+            vb14.DebugOut("ReadData for " & oZrodlo.GetSettingName & " - but not enabled")
             Return
         End If
 
@@ -217,7 +204,7 @@ NotInheritable Class App
             MakeToast(oNew, oZrodlo.GetSettingName, oZrodlo.GetDefOneToast)
         Next
 
-        If Not GetSettingsBool(oZrodlo.GetSettingName & "_OneToast", oZrodlo.GetDefOneToast) Then Return
+        If Not vb14.GetSettingsBool(oZrodlo.GetSettingName & "_OneToast", oZrodlo.GetDefOneToast) Then Return
         If mToastLines = "" Then Return
 
         ' jeden wspolny toast (wszystkie linie tego source razem)
@@ -225,23 +212,23 @@ NotInheritable Class App
 
     End Function
 
-    Private Shared Sub InitVbLib()
-        VBlib.pkarlibmodule.InitDump(GetSettingsInt("debugLogLevel", 0), Windows.Storage.ApplicationData.Current.TemporaryFolder.Path)
-        VBlib.pkarlibmodule.InitSettings(AddressOf pkar.SetSettingsString, AddressOf pkar.SetSettingsInt, AddressOf pkar.SetSettingsBool, AddressOf pkar.GetSettingsString, AddressOf pkar.GetSettingsInt, AddressOf pkar.GetSettingsBool)
-        VBlib.pkarlibmodule.InitDialogBox(AddressOf pkar.DialogBoxAsync, AddressOf pkar.DialogBoxYNAsync, AddressOf pkar.DialogBoxInputAllDirectAsync)
-    End Sub
-    Public Shared Async Function SciagnijDane(bMsg As Boolean) As Task
-        DumpCurrMethod("(bMsg=" & bMsg)
+    'Private Shared Sub InitVbLib()
+    '    VBlib.pkarlibmodule.InitDump(GetSettingsInt("debugLogLevel", 0), Windows.Storage.ApplicationData.Current.TemporaryFolder.Path)
+    '    VBlib.pkarlibmodule.InitSettings(AddressOf pkar.SetSettingsString, AddressOf pkar.SetSettingsInt, AddressOf pkar.SetSettingsBool, AddressOf pkar.GetSettingsString, AddressOf pkar.GetSettingsInt, AddressOf pkar.GetSettingsBool)
+    '    VBlib.pkarlibmodule.InitDialogBox(AddressOf pkar.DialogBoxAsync, AddressOf pkar.DialogBoxYNAsync, AddressOf pkar.DialogBoxInputAllDirectAsync)
+    'End Sub
+    Public Shared Async Function SciagnijDane(oPage As Page, bMsg As Boolean) As Task
+        vb14.DumpCurrMethod("(bMsg=" & bMsg)
 
         If VBlib.App.glItems.Count < 1 Then
-            DebugOut(2, "nie ma cache - Loading")
+            vb14.DebugOut(2, "nie ma cache - Loading")
             WczytajCache()
         End If
 
         For Each oZrodlo As VBlib.Source_Base In VBlib.App.gaSrc
             Try
                 Await ReadDataOne(bMsg, oZrodlo)
-                If bMsg Then ProgRingInc()
+                If bMsg Then oPage.ProgRingInc()
             Catch ex As Exception
                 ' zeby jeden błędny nie powodował zniknięcia reszty
             End Try
@@ -253,7 +240,7 @@ NotInheritable Class App
     Protected Async Function AppServiceLocalCommand(sCommand As String) As Task(Of String)
         Select Case sCommand.ToLower
             Case "check now"
-                Await SciagnijDane(False)
+                Await SciagnijDane(Nothing, False)
                 Return "Done"
         End Select
         Return ""
@@ -263,14 +250,14 @@ NotInheritable Class App
         ' tile update / warnings
         moTaskDeferal = args.TaskInstance.GetDeferral() ' w pkarmodule.App
 
-        InitVbLib()
+        InitLib(Nothing, True)
 
         Dim bNoComplete As Boolean = False
         Dim bObsluzone As Boolean = False
         Select Case args.TaskInstance.Task.Name
             Case "Wycofania_Timer"
-                SetSettingsString("lastTimerRun", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"))
-                If NetIsIPavailable(False) Then Await SciagnijDane(False)
+                vb14.SetSettingsString("lastTimerRun", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"))
+                If NetIsIPavailable(False) Then Await SciagnijDane(Nothing, False)
                 bObsluzone = True
         End Select
 

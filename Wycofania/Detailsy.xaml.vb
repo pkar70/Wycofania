@@ -1,5 +1,5 @@
-﻿
-Imports Windows.ApplicationModel.DataTransfer
+﻿Imports Windows.ApplicationModel.DataTransfer
+Imports vb14 = VBlib.pkarlibmodule14
 
 Public NotInheritable Class Detailsy
     Inherits Page
@@ -40,19 +40,20 @@ Public NotInheritable Class Detailsy
 
     Private Sub uiCopyHtml_Click(sender As Object, e As RoutedEventArgs)
         If moItem IsNot Nothing Then
-            ClipPutHtml(moItem.sHtmlInfo)
+            vb14.ClipPutHtml(moItem.sHtmlInfo)
         End If
     End Sub
 
     Private Sub uiCopyLink_Click(sender As Object, e As RoutedEventArgs)
         If moItem IsNot Nothing Then
-            ClipPut(moItem.sLink)
+            vb14.ClipPut(moItem.sLink)
         End If
     End Sub
 
     Private Sub uiOpenLink_Click(sender As Object, e As RoutedEventArgs)
         If moItem IsNot Nothing Then
-            OpenBrowser(moItem.sLink)
+            Dim oUri As New Uri(moItem.sLink)
+            oUri.OpenBrowser
         End If
     End Sub
 

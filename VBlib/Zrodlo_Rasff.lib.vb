@@ -81,7 +81,7 @@ Public Class Source_RASFF
                 oNew.sId = oNew.sLink.Substring(iInd + 1, 8)
             End If
 
-            Dim sPage As String = Await HttpPageAsync(oNew.sLink, "", False)
+            Dim sPage As String = Await HttpPageAsync(New Uri(oNew.sLink), "", False)
             iInd = sPage.IndexOf("<h3")
             If iInd > 0 Then
                 sPage = sPage.Substring(iInd)

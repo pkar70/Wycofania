@@ -12,7 +12,7 @@ Public Class Source_UOKIK
 
 
     Private Async Function GetRssPageAsync() As Task(Of String)
-        Dim sPage As String = Await VBlib.HttpPageAsync("https://www.uokik.gov.pl/rss/5.xml")
+        Dim sPage As String = Await VBlib.HttpPageAsync(New Uri("https://www.uokik.gov.pl/rss/5.xml"))
         If sPage = "" Then Return ""
 
         ' <rss version="0.92">  ->  ﻿<rss version="2.0" >

@@ -1,4 +1,5 @@
-﻿
+﻿Imports vb14 = VBlib.pkarlibmodule14
+
 ' 2022.02.06
 ' ikonka dla Toast (ta sama co na liście)
 ' 
@@ -34,13 +35,13 @@ Public NotInheritable Class MainPage
     End Sub
 
     Private Async Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
-        CrashMessageInit()
+        '  CrashMessageInit() zbędne w aktualnej wersji biblioteki
 
         ProgRingInit(True, True)
 
         If Not IsTriggersRegistered("Wycofania") Then
             If Not Await CanRegisterTriggersAsync() Then
-                DialogBoxRes("errNoBackgroud")
+                vb14.DialogBoxRes("errNoBackgroud")
             Else
                 RegisterTimerTrigger("Wycofania_Timer", 90)
             End If
@@ -81,7 +82,8 @@ Public NotInheritable Class MainPage
         Dim oMFI As MenuFlyoutItem = TryCast(sender, MenuFlyoutItem)
         If oMFI Is Nothing Then Return
         Dim sLink As String = CType(oMFI.DataContext, String)
-        OpenBrowser(sLink)
+        Dim oUri As New Uri(sLink)
+        oUri.OpenBrowser
     End Sub
 
     Private Async Sub uiRefresh_Click(sender As Object, e As RoutedEventArgs)
@@ -91,7 +93,7 @@ Public NotInheritable Class MainPage
         If VBlib.App.gaSrc.Count < 1 Then Return
 
         ProgRingShow(True, False, 0, VBlib.App.gaSrc.Count)
-        Await App.SciagnijDane(True)
+        Await App.SciagnijDane(Me, True)
         ProgRingShow(False)
 
         uiList.ItemsSource = From c In VBlib.App.glItems Order By c.sData Descending
@@ -116,7 +118,8 @@ Public NotInheritable Class MainPage
         Dim oItem As JednoPowiadomienie = TryCast(oMFI.DataContext, JednoPowiadomienie)
         If oItem Is Nothing Then Return
 
-        OpenBrowser(oItem.sLink)
+        Dim oUri As New Uri(oItem.sLink)
+        oUri.OpenBrowser()
     End Sub
 
     Private Sub uiCopyLink_Click(sender As Object, e As RoutedEventArgs)
@@ -125,7 +128,7 @@ Public NotInheritable Class MainPage
         Dim oItem As JednoPowiadomienie = TryCast(oMFI.DataContext, JednoPowiadomienie)
         If oItem Is Nothing Then Return
 
-        ClipPut(oItem.sLink)
+        vb14.ClipPut(oItem.sLink)
     End Sub
 
 End Class
@@ -200,7 +203,7 @@ Public Class KonwersjaIkonkiVisibility
             ByVal language As System.String) As Object _
             Implements IValueConverter.Convert
 
-        Dim bIcon As Boolean = GetSettingsBool("uiConfig_ShowIcons", False)
+        Dim bIcon As Boolean = vb14.GetSettingsBool("uiConfig_ShowIcons", False)
         Dim sUnit As String = parameter
 
         'DebugOut("KonwersjaIkonkiVisibility(,," & sUnit & "..), bIcon=" & bIcon)

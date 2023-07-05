@@ -17,7 +17,7 @@ Public Class Source_GIS
         DebugOut("  Limits: sLimitDate=" & sLimitDate)
 
         ' https://rdg.ezdrowie.gov.pl/, 7 kB
-        Dim sPage As String = Await HttpPageAsync("https://www.gov.pl/web/gis/ostrzezenia")
+        Dim sPage As String = Await HttpPageAsync(New Uri("https://www.gov.pl/web/gis/ostrzezenia"))
         If sPage = "" Then Return Nothing
 
         Dim iInd As Integer = sPage.IndexOf("<h2>Ostrzeżenia</h2>")
@@ -127,7 +127,7 @@ Public Class Source_GIS
 
             DebugOut("  trying to get details for " & oNew.sTitle & "(@" & oNew.sData)
             'Public Property sHtmlInfo As String = ""
-            sPage = Await HttpPageAsync(oNew.sLink, "", False)
+            sPage = Await HttpPageAsync(New Uri(oNew.sLink), "", False)
             DebugOut("  got details HTML page")
 
             iInd = sPage.IndexOf("<article")

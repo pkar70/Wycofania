@@ -1,5 +1,6 @@
-﻿
-
+﻿Imports vb14 = VBlib.pkarlibmodule14
+Imports VBlib.Extensions
+Imports pkar.DotNetExtensions
 
 Public NotInheritable Class Settings
     Inherits Page
@@ -19,14 +20,14 @@ Public NotInheritable Class Settings
 
         Dim oTS As ToggleSwitch = New ToggleSwitch
         oTS.Name = "uiConfig_" & oZrodlo.GetSettingName
-        oTS.IsOn = GetSettingsBool(oZrodlo.GetSettingName, oZrodlo.GetDefEnable)
+        oTS.IsOn = vb14.GetSettingsBool(oZrodlo.GetSettingName, oZrodlo.GetDefEnable)
         oStack.Children.Add(oTS)
 
         oTS = New ToggleSwitch
         oTS.Name = "uiConfig_" & oZrodlo.GetSettingName & "_Toast"
         oTS.OffContent = "powiadomienia wyłączone" ' GetLangString("msgSettToastOff")
         oTS.OnContent = "pokazuj powiadomienia" ' GetLangString("msgSettToastOn")
-        oTS.IsOn = GetSettingsBool(oZrodlo.GetSettingName & "_Toast", False)
+        oTS.IsOn = vb14.GetSettingsBool(oZrodlo.GetSettingName & "_Toast", False)
         oStack.Children.Add(oTS)
 
         Dim oBindExpr = oTS.GetBindingExpression(ToggleSwitch.IsOnProperty)
@@ -38,7 +39,7 @@ Public NotInheritable Class Settings
         oTS.Name = "uiConfig_" & oZrodlo.GetSettingName & "_OneToast"
         oTS.OffContent = "osobne powiadomienia" ' GetLangString("msgSettToastOff")
         oTS.OnContent = "powiadomienie zbiorcze" ' GetLangString("msgSettToastOn")
-        oTS.IsOn = GetSettingsBool(oZrodlo.GetSettingName & "_OneToast", oZrodlo.GetDefOneToast)
+        oTS.IsOn = vb14.GetSettingsBool(oZrodlo.GetSettingName & "_OneToast", oZrodlo.GetDefOneToast)
         ' oTS.IsEnabled = oBind
         oTS.SetBinding(ToggleSwitch.IsEnabledProperty, oBind)
         oStack.Children.Add(oTS)
@@ -48,7 +49,7 @@ Public NotInheritable Class Settings
         oSld.Header = "Czas przechowywania (tygodnie)" ' GetLangString("msgStorageTime")
         oSld.Minimum = 1
         oSld.Maximum = 52
-        oSld.Value = GetSettingsInt(oZrodlo.GetSettingName & "_Slider", oZrodlo.GetMaxWeeks).MinMax(1, 52)
+        oSld.Value = vb14.GetSettingsInt(oZrodlo.GetSettingName & "_Slider", oZrodlo.GetMaxWeeks).Between(1, 52)
         oStack.Children.Add(oSld)
 
         Dim oKreska As Shapes.Rectangle = New Shapes.Rectangle()
@@ -77,13 +78,13 @@ Public NotInheritable Class Settings
         oTS.Header = "Pokazuj źródło jako"
         oTS.OffContent = "tekst"
         oTS.OnContent = "ikonkę"
-        oTS.IsOn = GetSettingsBool("uiConfig_ShowIcons", False)
+        oTS.IsOn = vb14.GetSettingsBool("uiConfig_ShowIcons", False)
         uiStackConfig.Children.Add(oTS)
 
         oTS = New ToggleSwitch
         oTS.Name = "uiConfigGlobal_AllowRemoteSystem"
         oTS.Header = "Dostęp debug"
-        oTS.IsOn = Not GetSettingsBool("remoteSystemDisabled", False)
+        oTS.IsOn = Not vb14.GetSettingsBool("remoteSystemDisabled", False)
         uiStackConfig.Children.Add(oTS)
 
     End Sub
@@ -111,8 +112,8 @@ Public NotInheritable Class Settings
             If oItem.Name.StartsWith("uiConfigGlobal_") Then
                 oTS = TryCast(oItem, ToggleSwitch)
                 If oTS IsNot Nothing Then
-                    If oTS.Name = "uiConfigGlobal_ShowIcons" Then SetSettingsBool("uiConfig_ShowIcons", oTS.IsOn)
-                    If oTS.Name = "uiConfigGlobal_AllowRemoteSystem" Then SetSettingsBool("remoteSystemDisabled", Not oTS.IsOn)
+                    If oTS.Name = "uiConfigGlobal_ShowIcons" Then oTS.SetSettingsBool("uiConfig_ShowIcons")
+                    If oTS.Name = "uiConfigGlobal_AllowRemoteSystem" Then vb14.SetSettingsBool("remoteSystemDisabled", Not oTS.IsOn)
                 End If
 
                 Continue For
@@ -123,7 +124,7 @@ Public NotInheritable Class Settings
             oTS = TryCast(oItem, ToggleSwitch)
             If oTS IsNot Nothing Then
                 Dim sSettName As String = oTS.Name.Replace("uiConfig_", "")
-                SetSettingsBool(sSettName, oTS.IsOn)
+                oTS.SetSettingsBool(sSettName)
             End If
 
             Dim oSld As Slider
@@ -131,7 +132,7 @@ Public NotInheritable Class Settings
             If oSld IsNot Nothing Then
                 Dim sSettName As String = oSld.Name.Replace("uiConfig_", "")
 
-                SetSettingsInt(sSettName, oSld.Value)
+                vb14.SetSettingsInt(sSettName, oSld.Value)
             End If
 
         Next
@@ -141,7 +142,7 @@ Public NotInheritable Class Settings
     End Sub
 
     Private Async Sub uiClear_Click(sender As Object, e As RoutedEventArgs)
-        If Not Await DialogBoxYNAsync("Na pewno skasować cały cache?") Then Return
+        If Not Await vb14.DialogBoxYNAsync("Na pewno skasować cały cache?") Then Return
 
         VBlib.App.glItems.Clear()
         App.ZapiszCache()

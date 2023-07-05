@@ -31,7 +31,7 @@ Public Class Source_Rapex
 
         Do
             oResponse = Await RapexGetResultPageAsync(iPageNo, bMsg)
-
+            If oResponse Is Nothing Then Return oRetList
             For Each oAlert As JSONrapexContent In oResponse.content
 
                 Dim oNew As JednoPowiadomienie = NewPowiadomienie()
