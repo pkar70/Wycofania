@@ -1,4 +1,5 @@
 ﻿Imports vb14 = VBlib.pkarlibmodule14
+Imports pkar.Uwp.Ext
 
 
 NotInheritable Class App

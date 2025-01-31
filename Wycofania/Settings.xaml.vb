@@ -1,6 +1,8 @@
 ﻿Imports vb14 = VBlib.pkarlibmodule14
-Imports VBlib.Extensions
+'Imports VBlib.Extensions
 Imports pkar.DotNetExtensions
+Imports pkar.Uwp.Configs.Extensions
+Imports pkar.Uwp.Ext
 
 Public NotInheritable Class Settings
     Inherits Page
@@ -66,8 +68,11 @@ Public NotInheritable Class Settings
     Private Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
 
         ' GetAppVers(Nothing)
-        Me.ShowAppVers
-
+#If DEBUG Then
+        Me.ShowAppVers(True)
+#Else
+        Me.ShowAppVers(false)
+#End If
         For Each oZrodlo As VBlib.Source_Base In VBlib.App.gaSrc
             CreateConfigItems(uiStackConfig, oZrodlo)
             ' oZrodlo.ConfigCreate(uiStackConfig)

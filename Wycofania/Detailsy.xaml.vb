@@ -1,5 +1,6 @@
 ﻿Imports Windows.ApplicationModel.DataTransfer
 Imports vb14 = VBlib.pkarlibmodule14
+Imports pkar.Uwp.Ext
 
 Public NotInheritable Class Detailsy
     Inherits Page

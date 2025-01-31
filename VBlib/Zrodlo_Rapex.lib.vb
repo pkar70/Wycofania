@@ -123,7 +123,7 @@ Public Class Source_Rapex
         Try
             oResp = Await moHttp.GetAsync(New Uri(sUrl))
         Catch ex As Exception
-            CrashMessageAdd("@RapexGetDetailsPageAsync GetAsync " & sUrl, ex)
+            EwentualnieToastError("@RapexGetDetailsPageAsync GetAsync " & sUrl, ex)
             Return Nothing
         End Try
 
@@ -142,7 +142,7 @@ Public Class Source_Rapex
             If bMsg Then
                 Await DialogBoxAsync(sError)
             Else
-                CrashMessageAdd("@RapexGetDetailsPageAsync2", sError)
+                EwentualnieToastError("@RapexGetDetailsPageAsync2", sError)
             End If
             Return Nothing
         End If
@@ -152,7 +152,7 @@ Public Class Source_Rapex
         Try
             sResp = Await oResp.Content.ReadAsStringAsync
         Catch ex As Exception
-            CrashMessageAdd("@RapexGetDetailsPageAsync ReadAsStringAsync " & sUrl, ex)
+            EwentualnieToastError("@RapexGetDetailsPageAsync ReadAsStringAsync " & sUrl, ex)
             ' sError = ex.Message
             Return Nothing
         End Try
@@ -171,6 +171,29 @@ Public Class Source_Rapex
         Return oResponse
 
     End Function
+
+    Private Shared _rapexErrorCount As Integer
+
+    Private Shared Sub EwentualnieToastError(sCheckpoint As String, sMessage As String)
+
+        _rapexErrorCount += 1
+        If _rapexErrorCount < 3 Then Return
+
+        CrashMessageAdd(sCheckpoint, sMessage)
+        _rapexErrorCount = 0
+
+    End Sub
+
+    Private Shared Sub EwentualnieToastError(sCheckpoint As String, ex As Exception)
+
+        _rapexErrorCount += 1
+        If _rapexErrorCount < 3 Then Return
+
+        CrashMessageAdd(sCheckpoint, ex?.Message)
+        _rapexErrorCount = 0
+
+    End Sub
+
 
     Private Shared Async Function RapexGetResultPageAsync(iPageNo As Integer, bMsg As Boolean) As Task(Of JSONrapexPage)
 
@@ -193,21 +216,21 @@ Public Class Source_Rapex
         End Try
 
         If sError <> "" Then
-            sError = "error " & sError & " at RAPEX get page" & iPageNo
+            sError = $"error {sError} at RAPEX get page {iPageNo}"
             If bMsg Then
                 Await DialogBoxAsync(sError)
             Else
-                CrashMessageAdd("@HttpPageAsync1", sError)
+                EwentualnieToastError("@HttpPageAsync1", sError)
             End If
             Return Nothing
         End If
 
         If oResp.StatusCode > 290 Then
-            sError = "ERROR " & oResp.StatusCode & " at RAPEX get page"
+            sError = $"ERROR {oResp.StatusCode} at RAPEX get page"
             If bMsg Then
                 Await DialogBoxAsync(sError)
             Else
-                CrashMessageAdd("@HttpPageAsync2", sError)
+                EwentualnieToastError("@HttpPageAsync2", sError)
             End If
             Return Nothing
         End If
@@ -221,11 +244,11 @@ Public Class Source_Rapex
         End Try
 
         If sError <> "" Then
-            sError = "error " & sError & " at ReadAsStringAsync in RAPEX get page"
+            sError = "error ${sError} at ReadAsStringAsync in RAPEX get page"
             If bMsg Then
                 Await DialogBoxAsync(sError)
             Else
-                CrashMessageAdd("@HttpPageAsync3", sError)
+                EwentualnieToastError("@HttpPageAsync3", sError)
             End If
             Return Nothing
         End If

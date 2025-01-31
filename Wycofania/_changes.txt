@@ -1,0 +1,4 @@
+
+2023.09.22
+* RAPEX: ¿eby ograniczyæ liczbê Toastów z b³êdami, pokazuje teraz toast tylko gdy kilka razy pod rz¹d jest b³¹d
+* Nugety UWP (config, ext)
