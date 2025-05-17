@@ -39,12 +39,10 @@ Public Class Source_Rapex
 
                 oNew.sId = oAlert.id
                 oNew.sLink = "https://ec.europa.eu/safety-gate-alerts/screen/webReport/alertDetail/" & oNew.sId
-                For Each oItem As JednoPowiadomienie In App.glItems
-                    If oItem.sLink = oNew.sLink Then
-                        DebugOut("iteraing END because of ID")
-                        Exit Do
-                    End If
-                Next
+                If App.glItems.Any(Function(x) x.sLink = oNew.sLink) Then
+                    DebugOut("iteraing END because of ID")
+                    Exit Do
+                End If
 
                 If oAlert.publicationDate < oLimitDate Then
                     DebugOut("iteraing END because of date")

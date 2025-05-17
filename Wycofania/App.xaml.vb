@@ -1,5 +1,6 @@
 ﻿Imports vb14 = VBlib.pkarlibmodule14
-Imports pkar.Uwp.Ext
+Imports pkar.UI.Extensions
+
 
 
 NotInheritable Class App
@@ -93,7 +94,8 @@ NotInheritable Class App
                     Dim sId As String = sArgs.Substring(0, iInd + 1)
                     Dim oMPage As MainPage = TryCast(rootFrame.Content, MainPage)
                     If oMPage IsNot Nothing Then
-                        If VBlib.App.glItems.Count < 1 Then WczytajCache()
+                        'If VBlib.App.glItems.Count < 1 Then
+                        WczytajCache()
                         oMPage.GoDetailsToastId(sIcon, sId)
                     End If
             End Select
@@ -135,7 +137,7 @@ NotInheritable Class App
     End Function
 
     Public Shared Function ZapiszCache() As Boolean
-        Return VBlib.App.ZapiszCache(Windows.Storage.ApplicationData.Current.LocalCacheFolder.Path)
+        Return VBlib.App.glItems.Save ' ZapiszCache(Windows.Storage.ApplicationData.Current.LocalCacheFolder.Path)
     End Function
 
     Private Shared mToastIcon As String = ""
@@ -157,7 +159,7 @@ NotInheritable Class App
         If sId <> "" Then sTag = sIcon & "-" & sId
         oBldr.AddArgument("OPEN" & sTag)
 
-        Dim oToast As Windows.UI.Notifications.ToastNotification = New Windows.UI.Notifications.ToastNotification(oBldr.GetXml)
+        Dim oToast As New Windows.UI.Notifications.ToastNotification(oBldr.GetXml)
 
         If sTag <> "" Then
             ' The size of the notification tag is too large.
@@ -218,20 +220,31 @@ NotInheritable Class App
     '    VBlib.pkarlibmodule.InitSettings(AddressOf pkar.SetSettingsString, AddressOf pkar.SetSettingsInt, AddressOf pkar.SetSettingsBool, AddressOf pkar.GetSettingsString, AddressOf pkar.GetSettingsInt, AddressOf pkar.GetSettingsBool)
     '    VBlib.pkarlibmodule.InitDialogBox(AddressOf pkar.DialogBoxAsync, AddressOf pkar.DialogBoxYNAsync, AddressOf pkar.DialogBoxInputAllDirectAsync)
     'End Sub
-    Public Shared Async Function SciagnijDane(oPage As Page, bMsg As Boolean) As Task
-        vb14.DumpCurrMethod("(bMsg=" & bMsg)
+    Public Shared Async Function SciagnijDane(oPage As Page) As Task
+        Try
+            vb14.DumpCurrMethod("(oPage null?=" & (oPage Is Nothing))
+        Catch ex As Exception
+            VBlib.CrashMessageAdd("SciagnijDane CRASH1 na Dump")
+        End Try
 
-        If VBlib.App.glItems.Count < 1 Then
-            vb14.DebugOut(2, "nie ma cache - Loading")
+        Try
+            VBlib.SetSettingsCurrentDate("lastCheck")
+        Catch ex As Exception
+            VBlib.CrashMessageAdd("SciagnijDane CRASH1 na SetDate")
+        End Try
+
+        If VBlib.App.glItems Is Nothing OrElse VBlib.App.glItems.Count < 1 Then
+            VBlib.DumpMessage("TIMER nie ma cache - Loading")
             WczytajCache()
         End If
 
         For Each oZrodlo As VBlib.Source_Base In VBlib.App.gaSrc
             Try
-                Await ReadDataOne(bMsg, oZrodlo)
-                If bMsg Then oPage.ProgRingInc()
+                VBlib.DumpMessage("TIMER oZrodlo=" & oZrodlo.GetSettingName)
+                Await ReadDataOne(oPage IsNot Nothing, oZrodlo)
+                oPage?.ProgRingInc()
             Catch ex As Exception
-                ' zeby jeden błędny nie powodował zniknięcia reszty
+                VBlib.CrashMessageAdd("SciagnijDane CRASH3 w For")
             End Try
         Next
 
@@ -241,7 +254,7 @@ NotInheritable Class App
     Protected Async Function AppServiceLocalCommand(sCommand As String) As Task(Of String)
         Select Case sCommand.ToLower
             Case "check now"
-                Await SciagnijDane(Nothing, False)
+                Await SciagnijDane(Nothing)
                 Return "Done"
         End Select
         Return ""
@@ -255,12 +268,22 @@ NotInheritable Class App
 
         Dim bNoComplete As Boolean = False
         Dim bObsluzone As Boolean = False
-        Select Case args.TaskInstance.Task.Name
-            Case "Wycofania_Timer"
-                vb14.SetSettingsString("lastTimerRun", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"))
-                If NetIsIPavailable(False) Then Await SciagnijDane(Nothing, False)
-                bObsluzone = True
-        End Select
+
+        'VBlib.CrashMessageAdd("backgroud activated: " & args.TaskInstance.Task.Name)
+
+        Try
+
+            Select Case args.TaskInstance.Task.Name
+                Case "Wycofania_Timer"
+                    If NetIsIPavailable(False) Then
+                        vb14.SetSettingsCurrentDate("lastTimerRun") ', DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"))
+                        Await SciagnijDane(Nothing)
+                    End If
+                    bObsluzone = True
+            End Select
+        Catch ex As Exception
+            VBlib.CrashMessageAdd("WycofTimer", ex)
+        End Try
 
         Dim sLocalCmds As String = "check now" & vbTab & ": check data now"
 

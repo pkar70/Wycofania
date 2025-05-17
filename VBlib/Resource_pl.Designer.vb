@@ -12,7 +12,6 @@ Option Strict On
 Option Explicit On
 
 Imports System
-Imports System.Reflection
 
 Namespace My.Resources
     
@@ -44,7 +43,7 @@ Namespace My.Resources
         Friend Shared ReadOnly Property ResourceManager() As Global.System.Resources.ResourceManager
             Get
                 If Object.ReferenceEquals(resourceMan, Nothing) Then
-                    Dim temp As Global.System.Resources.ResourceManager = New Global.System.Resources.ResourceManager("VBlibekStd.Resource_PL", GetType(Resource_PL).GetTypeInfo.Assembly)
+                    Dim temp As Global.System.Resources.ResourceManager = New Global.System.Resources.ResourceManager("VBlib.Resource_PL", GetType(Resource_PL).Assembly)
                     resourceMan = temp
                 End If
                 Return resourceMan
@@ -71,6 +70,15 @@ Namespace My.Resources
         Friend Shared ReadOnly Property _lang() As String
             Get
                 Return ResourceManager.GetString("_lang", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  Looks up a localized string similar to Mam zakaz pracy w tle.
+        '''</summary>
+        Friend Shared ReadOnly Property errNoBackgroud() As String
+            Get
+                Return ResourceManager.GetString("errNoBackgroud", resourceCulture)
             End Get
         End Property
         

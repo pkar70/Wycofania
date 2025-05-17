@@ -1,4 +1,5 @@
-﻿
+﻿Imports pkar
+Imports pkar.BaseStruct
 
 Public Class App
 
@@ -11,61 +12,66 @@ Public Class App
         New Source_Rapex
     }
 
-    Public Shared glItems As New ObjectModel.Collection(Of JednoPowiadomienie)
-
+    Public Shared glItems As BaseList(Of JednoPowiadomienie)
 
     Public Shared Function WczytajCache(sCacheFolder As String) As Boolean
-        Dim sFilename As String = IO.Path.Combine(sCacheFolder, "items.json")
-        Dim sTxt As String = ""
-        If IO.File.Exists(sFilename) Then
-            sTxt = IO.File.ReadAllText(sFilename)
-        End If
-
-        If sTxt Is Nothing OrElse sTxt.Length < 5 Then
-            glItems.Clear()
-            Return False
-        End If
-
-        glItems = Newtonsoft.Json.JsonConvert.DeserializeObject(sTxt, GetType(ObjectModel.Collection(Of JednoPowiadomienie)))
-        Return True
-    End Function
-
-    Public Shared Function ZapiszCache(sCacheFolder As String) As Boolean
         If glItems Is Nothing Then
-            DebugOut("ZapiszCache - glItems null")
-            Return False
-        End If
-        If glItems.Count < 1 Then
-            DebugOut("ZapiszCache - glItems.count<1")
-            Return False
+            glItems = New BaseList(Of JednoPowiadomienie)(sCacheFolder)
         End If
 
-        RemoveOldCache()    ' usun zbyt stare entries
-        If glItems.Count < 1 Then
-            DebugOut("ZapiszCache - glItems.count<1 (po usunieciu starych)")
-            Return False
-        End If
+        Return glItems.Load
 
-        DebugOut("ZapiszCache - do zapisania jest " & glItems.Count & " entries")
+        'Dim sFilename As String = IO.Path.Combine(sCacheFolder, "items.json")
+        'Dim sTxt As String = ""
+        'If IO.File.Exists(sFilename) Then
+        '    sTxt = IO.File.ReadAllText(sFilename)
+        'End If
 
-        Dim sTxt As String = Newtonsoft.Json.JsonConvert.SerializeObject(glItems, Newtonsoft.Json.Formatting.Indented)
-        Dim sFilename As String = IO.Path.Combine(sCacheFolder, "items.json")
-        IO.File.WriteAllText(sFilename, sTxt)
+        'If sTxt Is Nothing OrElse sTxt.Length < 5 Then
+        '    glItems.Clear()
+        '    Return False
+        'End If
 
-        Return True
+        'glItems = Newtonsoft.Json.JsonConvert.DeserializeObject(sTxt, GetType(ObjectModel.Collection(Of JednoPowiadomienie)))
+        'Return True
     End Function
 
-    Private Shared Function RemoveOldCache() As Integer
-        Dim iRet As Integer = 0
+    'Public Shared Function ZapiszCache(sCacheFolder As String) As Boolean
+    '    If glItems Is Nothing Then
+    '        DebugOut("ZapiszCache - glItems null")
+    '        Return False
+    '    End If
+    '    If glItems.Count < 1 Then
+    '        DebugOut("ZapiszCache - glItems.count<1")
+    '        Return False
+    '    End If
 
-        For Each oSource As Source_Base In gaSrc
-            iRet += oSource.RemoveOldCache
-        Next
+    '    RemoveOldCache()    ' usun zbyt stare entries
+    '    If glItems.Count < 1 Then
+    '        DebugOut("ZapiszCache - glItems.count<1 (po usunieciu starych)")
+    '        Return False
+    '    End If
 
-        DebugOut("RemoveOldCache - removed " & iRet & " old items")
-        Return iRet
+    '    DebugOut("ZapiszCache - do zapisania jest " & glItems.Count & " entries")
 
-    End Function
+    '    Dim sTxt As String = Newtonsoft.Json.JsonConvert.SerializeObject(glItems, Newtonsoft.Json.Formatting.Indented)
+    '    Dim sFilename As String = IO.Path.Combine(sCacheFolder, "items.json")
+    '    IO.File.WriteAllText(sFilename, sTxt)
+
+    '    Return True
+    'End Function
+
+    'Private Shared Function RemoveOldCache() As Integer
+    '    Dim iRet As Integer = 0
+
+    '    For Each oSource As Source_Base In gaSrc
+    '        iRet += oSource.RemoveOldCache
+    '    Next
+
+    '    DebugOut("RemoveOldCache - removed " & iRet & " old items")
+    '    Return iRet
+
+    'End Function
 
 
 

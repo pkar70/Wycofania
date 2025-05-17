@@ -1,6 +1,6 @@
 ﻿Imports Windows.ApplicationModel.DataTransfer
 Imports vb14 = VBlib.pkarlibmodule14
-Imports pkar.Uwp.Ext
+Imports pkar.UI.Extensions
 
 Public NotInheritable Class Detailsy
     Inherits Page
@@ -21,6 +21,7 @@ Public NotInheritable Class Detailsy
     End Sub
 
     Private Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
+        Me.InitDialogs
 
         If moItem IsNot Nothing Then
             If moItem.sHtmlInfo.Length > 10 Then
@@ -36,7 +37,7 @@ Public NotInheritable Class Detailsy
     End Sub
 
     Private Sub uiOk_Click(sender As Object, e As RoutedEventArgs)
-        Me.Frame.GoBack()
+        Me.GoBack()
     End Sub
 
     Private Sub uiCopyHtml_Click(sender As Object, e As RoutedEventArgs)
@@ -46,9 +47,7 @@ Public NotInheritable Class Detailsy
     End Sub
 
     Private Sub uiCopyLink_Click(sender As Object, e As RoutedEventArgs)
-        If moItem IsNot Nothing Then
-            vb14.ClipPut(moItem.sLink)
-        End If
+        moItem?.sLink.SendToClipboard
     End Sub
 
     Private Sub uiOpenLink_Click(sender As Object, e As RoutedEventArgs)

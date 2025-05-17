@@ -1,26 +1,26 @@
 ﻿Imports vb14 = VBlib.pkarlibmodule14
 'Imports VBlib.Extensions
 Imports pkar.DotNetExtensions
-Imports pkar.Uwp.Configs.Extensions
-Imports pkar.Uwp.Ext
+Imports pkar.UI.Configs.Extensions
+Imports pkar.UI.Extensions
 
 Public NotInheritable Class Settings
     Inherits Page
 
     Private Sub CreateConfigItems(oStack As StackPanel, oZrodlo As VBlib.Source_Base)
-        Dim oTB As TextBlock = New TextBlock
+        Dim oTB As New TextBlock
         oTB.Text = oZrodlo.GetFullName
         oTB.FontWeight = Windows.UI.Text.FontWeights.Bold
         oTB.FontSize = 18
         oTB.Margin = New Thickness(0, 5, 0, 0)
         oStack.Children.Add(oTB)
 
-        Dim oLnk As HyperlinkButton = New HyperlinkButton
+        Dim oLnk As New HyperlinkButton
         oLnk.Content = "O serwisie"
         oLnk.NavigateUri = New Uri(oZrodlo.GetAboutUs)
         oStack.Children.Add(oLnk)
 
-        Dim oTS As ToggleSwitch = New ToggleSwitch
+        Dim oTS As New ToggleSwitch
         oTS.Name = "uiConfig_" & oZrodlo.GetSettingName
         oTS.IsOn = vb14.GetSettingsBool(oZrodlo.GetSettingName, oZrodlo.GetDefEnable)
         oStack.Children.Add(oTS)
@@ -46,7 +46,7 @@ Public NotInheritable Class Settings
         oTS.SetBinding(ToggleSwitch.IsEnabledProperty, oBind)
         oStack.Children.Add(oTS)
 
-        Dim oSld As Slider = New Slider
+        Dim oSld As New Slider
         oSld.Name = "uiConfig_" & oZrodlo.GetSettingName & "_Slider"
         oSld.Header = "Czas przechowywania (tygodnie)" ' GetLangString("msgStorageTime")
         oSld.Minimum = 1
@@ -54,7 +54,7 @@ Public NotInheritable Class Settings
         oSld.Value = vb14.GetSettingsInt(oZrodlo.GetSettingName & "_Slider", oZrodlo.GetMaxWeeks).Between(1, 52)
         oStack.Children.Add(oSld)
 
-        Dim oKreska As Shapes.Rectangle = New Shapes.Rectangle()
+        Dim oKreska As New Shapes.Rectangle()
         oKreska.Name = "uiConfig_" & oZrodlo.GetSettingName & "_Kreska"
         oKreska.Height = 1
         oKreska.HorizontalAlignment = HorizontalAlignment.Stretch
@@ -66,6 +66,7 @@ Public NotInheritable Class Settings
     End Sub
 
     Private Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
+        Me.InitDialogs
 
         ' GetAppVers(Nothing)
 #If DEBUG Then
@@ -78,7 +79,7 @@ Public NotInheritable Class Settings
             ' oZrodlo.ConfigCreate(uiStackConfig)
         Next
 
-        Dim oTS As ToggleSwitch = New ToggleSwitch
+        Dim oTS As New ToggleSwitch
         oTS.Name = "uiConfigGlobal_ShowIcons"
         oTS.Header = "Pokazuj źródło jako"
         oTS.OffContent = "tekst"
@@ -142,12 +143,12 @@ Public NotInheritable Class Settings
 
         Next
 
-        Me.Frame.GoBack()
+        Me.GoBack()
 
     End Sub
 
     Private Async Sub uiClear_Click(sender As Object, e As RoutedEventArgs)
-        If Not Await vb14.DialogBoxYNAsync("Na pewno skasować cały cache?") Then Return
+        If Not Await Me.DialogBoxYNAsync("Na pewno skasować cały cache?") Then Return
 
         VBlib.App.glItems.Clear()
         App.ZapiszCache()

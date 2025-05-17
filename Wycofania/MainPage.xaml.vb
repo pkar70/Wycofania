@@ -1,5 +1,8 @@
 ﻿Imports vb14 = VBlib.pkarlibmodule14
-Imports pkar.Uwp.Ext
+Imports pkar.UI.Extensions
+Imports pkar.UI.Toasts
+Imports pkar.UI.Triggers
+Imports pkar.DotNetExtensions
 
 ' 2022.02.06
 ' ikonka dla Toast (ta sama co na liście)
@@ -37,25 +40,30 @@ Public NotInheritable Class MainPage
 
     Private Async Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
         '  CrashMessageInit() zbędne w aktualnej wersji biblioteki
-
+        Me.InitDialogs
         ProgRingInit(True, True)
+
+        Await CrashMessageShowAsync()
 
         If Not IsTriggersRegistered("Wycofania") Then
             If Not Await CanRegisterTriggersAsync() Then
-                vb14.DialogBoxRes("errNoBackgroud")
+                Me.MsgBox("errNoBackgroud")
             Else
                 RegisterTimerTrigger("Wycofania_Timer", 90)
             End If
         End If
 
         ProgRingShow(True)
-        If VBlib.App.glItems.Count < 1 Then App.WczytajCache()
+        'If VBlib.App.glItems.Count < 1 Then
+        App.WczytajCache()
         DodajLinkiSzukania()
 
         ProgRingShow(False)
 
-        uiList.ItemsSource = From c In VBlib.App.glItems Order By c.sData Descending
-
+        If VBlib.App.glItems IsNot Nothing Then
+            uiList.ItemsSource = From c In VBlib.App.glItems Order By c.sData Descending
+        End If
+        ToolTipService.SetToolTip(uiRefresh, VBlib.GetSettingsDate("lastCheck").ToExifString)
     End Sub
 
     Public Sub GoDetailsToastId(sIcon As String, sId As String)
@@ -70,7 +78,7 @@ Public NotInheritable Class MainPage
 
     Private Sub DodajLinkiSzukania()
         For Each oZrodlo As VBlib.Source_Base In VBlib.App.gaSrc
-            Dim oMFI As MenuFlyoutItem = New MenuFlyoutItem
+            Dim oMFI As New MenuFlyoutItem
             oMFI.Text = oZrodlo.GetSettingName
             oMFI.Name = "uiSearchMFI_" & oZrodlo.GetSettingName
             oMFI.DataContext = oZrodlo.GetSearchLink
@@ -89,12 +97,12 @@ Public NotInheritable Class MainPage
 
     Private Async Sub uiRefresh_Click(sender As Object, e As RoutedEventArgs)
 
-        Dim oLista As Collection(Of JednoPowiadomienie) = New Collection(Of JednoPowiadomienie)
+        'Dim oLista As Collection(Of JednoPowiadomienie) = New Collection(Of JednoPowiadomienie)
 
         If VBlib.App.gaSrc.Count < 1 Then Return
 
         ProgRingShow(True, False, 0, VBlib.App.gaSrc.Count)
-        Await App.SciagnijDane(Me, True)
+        Await App.SciagnijDane(Me)
         ProgRingShow(False)
 
         uiList.ItemsSource = From c In VBlib.App.glItems Order By c.sData Descending
@@ -102,13 +110,12 @@ Public NotInheritable Class MainPage
     End Sub
 
     Private Sub uiOpenDetails_Click(sender As Object, e As RoutedEventArgs)
-        Dim oItem As JednoPowiadomienie = Nothing
         Dim oMFI As FrameworkElement = TryCast(sender, FrameworkElement)
         If oMFI Is Nothing Then Return
-        oItem = TryCast(oMFI.DataContext, JednoPowiadomienie)
+        Dim oItem As JednoPowiadomienie = TryCast(oMFI.DataContext, JednoPowiadomienie)
 
         ' wiemy już co
-        Me.Frame.Navigate(GetType(Detailsy), oItem.sLink)
+        Me.Navigate(GetType(Detailsy), oItem.sLink)
 
     End Sub
 
@@ -129,43 +136,17 @@ Public NotInheritable Class MainPage
         Dim oItem As JednoPowiadomienie = TryCast(oMFI.DataContext, JednoPowiadomienie)
         If oItem Is Nothing Then Return
 
-        vb14.ClipPut(oItem.sLink)
+        oItem.sLink.SendToClipboard
     End Sub
 
 End Class
 
-Public Class KonwersjaDaty
-    Implements IValueConverter
 
-    Public Function Convert(ByVal value As Object,
-            ByVal targetType As Type, ByVal parameter As Object,
-            ByVal language As System.String) As Object _
-            Implements IValueConverter.Convert
-
-        If value Is Nothing Then Return False
-
-        Dim sTmp As String = CType(value, String)
-        Return sTmp.Substring(2, 8)  ' yyyy.mm.dd
-    End Function
-
-    ' ConvertBack is not implemented for a OneWay binding.
-    Public Function ConvertBack(ByVal value As Object,
-            ByVal targetType As Type, ByVal parameter As Object,
-            ByVal language As System.String) As Object _
-            Implements IValueConverter.ConvertBack
-
-        Throw New NotImplementedException
-
-    End Function
-End Class
 
 Public Class KonwersjaIkonki
-    Implements IValueConverter
+    Inherits ValueConverterOneWaySimple
 
-    Public Function Convert(ByVal value As Object,
-            ByVal targetType As Type, ByVal parameter As Object,
-            ByVal language As System.String) As Object _
-            Implements IValueConverter.Convert
+    Protected Overrides Function Convert(value As Object) As Object
 
         ' jeden rządek w ListView ma 32 piksele (znaczy tyle ma buttton)
         Dim sTmp As String
@@ -184,42 +165,17 @@ Public Class KonwersjaIkonki
         'RASFF pigulka/chleb z EU
 
     End Function
-
-    ' ConvertBack is not implemented for a OneWay binding.
-    Public Function ConvertBack(ByVal value As Object,
-            ByVal targetType As Type, ByVal parameter As Object,
-            ByVal language As System.String) As Object _
-            Implements IValueConverter.ConvertBack
-
-        Throw New NotImplementedException
-
-    End Function
 End Class
 
 Public Class KonwersjaIkonkiVisibility
-    Implements IValueConverter
+    Inherits ValueConverterOneWayWithPar
 
-    Public Function Convert(ByVal value As Object,
-            ByVal targetType As Type, ByVal parameter As Object,
-            ByVal language As System.String) As Object _
-            Implements IValueConverter.Convert
+    Protected Overrides Function Convert(value As Object, param As String) As Object
 
         Dim bIcon As Boolean = vb14.GetSettingsBool("uiConfig_ShowIcons", False)
-        Dim sUnit As String = parameter
-
-        'DebugOut("KonwersjaIkonkiVisibility(,," & sUnit & "..), bIcon=" & bIcon)
-        If sUnit = "icon" Then Return bIcon
+        If param = "icon" Then Return bIcon
         Return Not bIcon
 
     End Function
 
-    ' ConvertBack is not implemented for a OneWay binding.
-    Public Function ConvertBack(ByVal value As Object,
-            ByVal targetType As Type, ByVal parameter As Object,
-            ByVal language As System.String) As Object _
-            Implements IValueConverter.ConvertBack
-
-        Throw New NotImplementedException
-
-    End Function
 End Class
