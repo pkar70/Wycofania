@@ -151,6 +151,6 @@ Public NotInheritable Class Settings
         If Not Await Me.DialogBoxYNAsync("Na pewno skasować cały cache?") Then Return
 
         VBlib.App.glItems.Clear()
-        App.ZapiszCache()
+        VBlib.App.ZapiszCache()
     End Sub
 End Class

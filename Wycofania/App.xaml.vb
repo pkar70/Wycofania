@@ -136,9 +136,9 @@ NotInheritable Class App
         Return VBlib.App.WczytajCache(Windows.Storage.ApplicationData.Current.LocalCacheFolder.Path)
     End Function
 
-    Public Shared Function ZapiszCache() As Boolean
-        Return VBlib.App.glItems.Save ' ZapiszCache(Windows.Storage.ApplicationData.Current.LocalCacheFolder.Path)
-    End Function
+    'Public Shared Function ZapiszCache() As Boolean
+    '    Return VBlib.App.glItems.Save ' ZapiszCache(Windows.Storage.ApplicationData.Current.LocalCacheFolder.Path)
+    'End Function
 
     Private Shared mToastIcon As String = ""
     Private Shared mToastLines As String = ""
@@ -172,7 +172,7 @@ NotInheritable Class App
         Windows.UI.Notifications.ToastNotificationManager.CreateToastNotifier().Show(oToast)
     End Sub
 
-    Protected Shared Sub MakeToast(oItem As JednoPowiadomienie, sSettName As String, bDefOneToast As Boolean)
+    Protected Shared Sub MakeToast(oItem As VBlib.JednoPowiadomienie, sSettName As String, bDefOneToast As Boolean)
         vb14.DumpCurrMethod()
 
         If Not vb14.GetSettingsBool(sSettName & "_Toast") Then Return
@@ -199,10 +199,10 @@ NotInheritable Class App
             Return
         End If
 
-        Dim oTempColl As Collection(Of JednoPowiadomienie) = Await oZrodlo.ReadData(bMsg)
+        Dim oTempColl As Collection(Of VBlib.JednoPowiadomienie) = Await oZrodlo.ReadData(bMsg)
         If oTempColl Is Nothing Then Return
 
-        For Each oNew As JednoPowiadomienie In oTempColl
+        For Each oNew As VBlib.JednoPowiadomienie In oTempColl
             VBlib.App.glItems.Add(oNew)
             MakeToast(oNew, oZrodlo.GetSettingName, oZrodlo.GetDefOneToast)
         Next
@@ -248,7 +248,8 @@ NotInheritable Class App
             End Try
         Next
 
-        ZapiszCache()
+        'ZapiszCache()
+        VBlib.App.ZapiszCache()
     End Function
 
     Protected Async Function AppServiceLocalCommand(sCommand As String) As Task(Of String)

@@ -49,7 +49,7 @@ Public NotInheritable Class MainPage
             If Not Await CanRegisterTriggersAsync() Then
                 Me.MsgBox("errNoBackgroud")
             Else
-                RegisterTimerTrigger("Wycofania_Timer", 90)
+                RegisterTimerTrigger("Wycofania_Timer", 90, False, New Windows.ApplicationModel.Background.SystemCondition(Windows.ApplicationModel.Background.SystemConditionType.InternetAvailable))
             End If
         End If
 
@@ -68,7 +68,7 @@ Public NotInheritable Class MainPage
 
     Public Sub GoDetailsToastId(sIcon As String, sId As String)
 
-        For Each oItem As JednoPowiadomienie In VBlib.App.glItems
+        For Each oItem As VBlib.JednoPowiadomienie In VBlib.App.glItems
             If oItem.sIcon = sIcon AndAlso oItem.sId = sId Then
                 Me.Frame.Navigate(GetType(Detailsy), oItem.sLink)
             End If
@@ -112,7 +112,7 @@ Public NotInheritable Class MainPage
     Private Sub uiOpenDetails_Click(sender As Object, e As RoutedEventArgs)
         Dim oMFI As FrameworkElement = TryCast(sender, FrameworkElement)
         If oMFI Is Nothing Then Return
-        Dim oItem As JednoPowiadomienie = TryCast(oMFI.DataContext, JednoPowiadomienie)
+        Dim oItem As VBlib.JednoPowiadomienie = TryCast(oMFI.DataContext, VBlib.JednoPowiadomienie)
 
         ' wiemy już co
         Me.Navigate(GetType(Detailsy), oItem.sLink)
@@ -123,7 +123,7 @@ Public NotInheritable Class MainPage
     Private Sub uiOpenWeb_Click(sender As Object, e As RoutedEventArgs)
         Dim oMFI As MenuFlyoutItem = TryCast(sender, MenuFlyoutItem)
         If oMFI Is Nothing Then Return
-        Dim oItem As JednoPowiadomienie = TryCast(oMFI.DataContext, JednoPowiadomienie)
+        Dim oItem As VBlib.JednoPowiadomienie = TryCast(oMFI.DataContext, VBlib.JednoPowiadomienie)
         If oItem Is Nothing Then Return
 
         Dim oUri As New Uri(oItem.sLink)
@@ -133,7 +133,7 @@ Public NotInheritable Class MainPage
     Private Sub uiCopyLink_Click(sender As Object, e As RoutedEventArgs)
         Dim oMFI As MenuFlyoutItem = TryCast(sender, MenuFlyoutItem)
         If oMFI Is Nothing Then Return
-        Dim oItem As JednoPowiadomienie = TryCast(oMFI.DataContext, JednoPowiadomienie)
+        Dim oItem As VBlib.JednoPowiadomienie = TryCast(oMFI.DataContext, VBlib.JednoPowiadomienie)
         If oItem Is Nothing Then Return
 
         oItem.sLink.SendToClipboard
@@ -178,4 +178,18 @@ Public Class KonwersjaIkonkiVisibility
 
     End Function
 
+End Class
+
+Public Class KonwersjaDatyStr
+    Inherits ValueConverterOneWaySimple
+
+    Protected Overrides Function Convert(value As Object) As Object
+        Dim sTmp As String
+        Try
+            sTmp = CType(value, String)
+            Return sTmp.Substring(2, 8)  ' yyyy.mm.dd
+        Catch
+        End Try
+        Return "???"
+    End Function
 End Class

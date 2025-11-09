@@ -51,7 +51,7 @@ Public MustInherit Class Source_Base
     ''' String yyyy.MM.dd
     ''' </summary>
     Protected Function GetLimitDate() As String
-        Dim iWeeks As Integer = GetSettingsInt(SRC_SETTING_NAME & "_Slider", SRC_MAXWEEKS)
+        Dim iWeeks As Integer = VBlib.GetSettingsInt(SRC_SETTING_NAME & "_Slider", SRC_MAXWEEKS)
         Dim oDate As Date = Date.Now.AddDays(-7 * iWeeks)
         Return oDate.ToString("yyyy.MM.dd")
     End Function
@@ -65,7 +65,7 @@ Public MustInherit Class Source_Base
 
         Dim bBylo As Boolean = False
         Do
-            For Each oItem As JednoPowiadomienie In VBlib.App.glItems
+            For Each oItem As VBlib.JednoPowiadomienie In VBlib.App.glItems
                 If oItem.sIcon = SRC_SETTING_NAME Then
                     If oItem.sData < sLimitDate Then
                         bBylo = True

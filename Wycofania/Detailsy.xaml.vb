@@ -6,13 +6,13 @@ Public NotInheritable Class Detailsy
     Inherits Page
 
     Dim msLink As String = ""
-    Dim moItem As JednoPowiadomienie = Nothing
+    Dim moItem As VBlib.JednoPowiadomienie = Nothing
     Protected Overrides Sub onNavigatedTo(e As NavigationEventArgs)
         msLink = e.Parameter.ToString.ToLower
 
         If msLink.Length < 5 Then Return
 
-        For Each oItem As JednoPowiadomienie In VBlib.App.glItems
+        For Each oItem As VBlib.JednoPowiadomienie In VBlib.App.glItems
             If oItem.sLink.ToLower = msLink Then
                 moItem = oItem
             End If

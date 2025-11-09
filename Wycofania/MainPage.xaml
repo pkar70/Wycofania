@@ -8,7 +8,7 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Loaded="Page_Loaded">
     <UserControl.Resources>
-        <local:KonwersjaDaty x:Key="KonwersjaDaty"/>
+        <local:KonwersjaDatyStr x:Key="KonwersjaDatyStr"/>
         <local:KonwersjaIkonkiVisibility x:Key="KonwersjaIkonkiVisibility"/>
         <local:KonwersjaIkonki x:Key="KonwersjaIkonki"/>
     </UserControl.Resources>
@@ -41,7 +41,7 @@
 
                         <TextBlock Grid.Column="0" Text="{Binding sIcon, Mode=OneWay }" VerticalAlignment="Center" Visibility="{Binding sData, Mode=OneWay, Converter={StaticResource KonwersjaIkonkiVisibility}, ConverterParameter=text }"/>
                         <Image Grid.Column="0" HorizontalAlignment="Center" Width="28"  Source="{Binding sIcon, Mode=OneWay, Converter={StaticResource KonwersjaIkonki} }" VerticalAlignment="Center" Visibility="{Binding sData, Mode=OneWay, Converter={StaticResource KonwersjaIkonkiVisibility}, ConverterParameter=icon }" ToolTipService.ToolTip="{Binding sSourceFullName}"/>
-                        <TextBlock Grid.Column="1" Text="{Binding sData, Mode=OneWay, Converter={StaticResource KonwersjaDaty} }" VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="1" Text="{Binding sData, Mode=OneWay, Converter={StaticResource KonwersjaDatyStr} }" VerticalAlignment="Center" />
                         <TextBlock Grid.Column="2" Text="{Binding sTitle, Mode=OneWay }" FontWeight="Bold" Margin="5,0,5,0" VerticalAlignment="Center" />
                         <Button Grid.Column="3" Margin="5,0,5,0" x:Uid="uiOpenContent" Content="Pokaż" Click="uiOpenDetails_Click" />
                         <Grid.ContextFlyout>
